@@ -15,7 +15,7 @@ CAPTCHA_CHECK_URL = 'https://kyfw.12306.cn/passport/captcha/captcha-check'
 ssl._create_default_https_context = ssl._create_unverified_context
 
 
-def capchaCkeck():
+def capchaCkeck_urllib():
     data = {
         'answer': '115,55,110,11',
         'login_site': 'E',
@@ -30,10 +30,10 @@ def capchaCkeck():
     cookies = urllib.request.HTTPCookieProcessor(cj)
     opener = urllib.request.build_opener(cookies)
     req = urllib.request.Request('https://kyfw.12306.cn/passport/captcha/captcha-image?login_site=E&module=login&rand=sjrand&0.8962342237695811')
-    print(cookies)
     # req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36')
     # req.add_header('Referer', 'https://kyfw.12306.cn/otn/login/init')
     img = opener.open(req).read()
+    print(cookies)
     with open('image.png', 'wb') as f:
         f.write(img)
 
@@ -44,12 +44,13 @@ def capchaCkeck():
     req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36')
     req.add_header('Referer', 'https://kyfw.12306.cn/otn/login/init')
     html = opener.open(req, data=bytes(data.encode('UTF-8'))).read().decode('UTF-8')
+
     print(html)
 
 
-def test_login():
+def test_login_requests():
     data = {
-        'answer': '115,55,110,11',
+        'answer': '115,55,110,1',
         'login_site': 'E',
         'rand': 'sjrand'
     }
@@ -58,22 +59,20 @@ def test_login():
         'Referer': r'https://kyfw.12306.cn/otn/login/init'
     }
 
-    # cj = cookiejar.LWPCookieJar()
-    # cookies = urllib.request.HTTPCookieProcessor(cj)
     s = requests.session()
-    p = s.get('https://kyfw.12306.cn/otn/login/init#', verify=False)
-    print('cookies-01:{}' % s.cookies)
-    img = s.get('https://kyfw.12306.cn/passport/captcha/captcha-image?login_site=E&module=login&rand=sjrand&0.8962342237695811', verify=False).content
-    print('cookies-02:{}' % s.cookies)
+    p = requests.get('https://kyfw.12306.cn/otn/login/init#', verify=False)
+    rsp = s.get('https://kyfw.12306.cn/passport/captcha/captcha-image?login_site=E&module=login&rand=sjrand&0.8962342237695811', verify=False)
+    img = rsp.content
     with open('image.png', 'wb') as f:
         f.write(img)
 
     data['answer'] = input('Location:\n')
-    data = parse.urlencode(data)
-
-    print('cookies:{}' % s.cookies)
-    html = s.post(CAPTCHA_CHECK_URL, data=bytes(data.encode('UTF-8')), cookies=s.cookies, headers=headers, verify=False).content.decode('UTF-8')
+    html_rsp = s.post(CAPTCHA_CHECK_URL, data=data, headers=headers, verify=False)
+    html = html_rsp.content.decode('UTF-8')
     print(html)
-# test_login()
-capchaCkeck()
+
+
+
+test_login_requests()
+# capchaCkeck()
 
